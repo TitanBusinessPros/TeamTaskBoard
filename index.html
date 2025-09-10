@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Team Task Board | Kanban Style</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #2c3e50;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo i {
+            font-size: 32px;
+            color: #3498db;
+        }
+        
+        .logo h1 {
+            font-weight: 700;
+            font-size: 28px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+        }
+        
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+        
+        .btn-secondary:hover {
+            background: #dfe6e9;
+            transform: translateY(-2px);
+        }
+        
+        .board {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding-bottom: 20px;
+        }
+        
+        .column {
+            flex: 0 0 320px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            max-height: 80vh;
+        }
+        
+        .column-header {
+            padding: 20px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            color: white;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .todo .column-header {
+            background: #e74c3c;
+        }
+        
+        .progress .column-header {
+            background: #f39c12;
+        }
+        
+        .review .column-header {
+            background: #3498db;
+        }
+        
+        .done .column-header {
+            background: #2ecc71;
+        }
+        
+        .task-count {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        .tasks {
+            padding: 20px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        
+        .task {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            cursor: grab;
+            border-left: 4px solid #3498db;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+        }
+        
+        .task:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .task:active {
+            cursor: grabbing;
+        }
+        
+        .high-priority {
+            border-left-color: #e74c3c;
+        }
+        
+        .medium-priority {
+            border-left-color: #f39c12;
+        }
+        
+        .low-priority {
+            border-left-color: #2ecc71;
+        }
+        
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .task-title {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .task-priority {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            background: #ecf0f1;
+        }
+        
+        .task-description {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .task-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .task-assignee {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #3498db;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .task-due {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        
+        .task-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #95a5a6;
+        }
+        
+        .task-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .task-action {
+            background: rgba(255, 255, 255, 0.8);
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            color: #7f8c8d;
+            transition: all 0.2s ease;
+        }
+        
+        .task-action:hover {
+            background: #ecf0f1;
+            color: #3498db;
+        }
+        
+        .add-task {
+            padding: 15px 20px;
+            border-top: 1px solid #ecf0f1;
+            color: #7f8c8d;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s ease;
+        }
+        
+        .add-task:hover {
+            background: #f8f9fa;
+            color: #3498db;
+        }
+        
+        .dragging {
+            opacity: 0.6;
+            transform: rotate(5deg);
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #ecf0f1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #ecf0f1;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .team-member {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            transition: background 0.2s ease;
+        }
+        
+        .team-member:hover {
+            background: #e8f4fc;
+        }
+        
+        .team-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #3498db;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .file-attachment {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            background: #edf2f7;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+        
+        .file-attachment i {
+            color: #3498db;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .board {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .column {
+                flex: 0 0 auto;
+                width: 100%;
+                max-width: 400px;
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-tasks"></i>
+                <h1>Enhanced Team Task Board</h1>
+            </div>
+            <div class="controls">
+                <button class="btn-primary" id="add-task-btn">
+                    <i class="fas fa-plus"></i> Add New Task
+                </button>
+                <button class="btn-secondary" id="team-members-btn">
+                    <i class="fas fa-users"></i> Team Members
+                </button>
+            </div>
+        </header>
+        
+        <div class="board">
+            <div class="column todo">
+                <div class="column-header">
+                    <span>To Do</span>
+                    <span class="task-count">3</span>
+                </div>
+                <div class="tasks">
+                    <div class="task high-priority" draggable="true">
+                        <div class="task-actions">
+                            <div class="task-action" title="Edit task"><i class="fas fa-edit"></i></div>
+                            <div class="task-action" title="Delete task"><i class="fas fa-trash"></i></div>
+                        </div>
+                        <div class="task-header">
+                            <div class="task-title">Design Homepage</div>
+                            <div class="task-priority">High</div>
+                        </div>
+                        <div class="task-description">
+                            Create modern and responsive homepage design
+                        </div>
+                        <div class="task-footer">
+                            <div class="task-assignee">
+                                <div class="avatar">JD</div>
+                                <span>John Doe</span>
+                            </div>
+                            <div class="task-due">Tomorrow</div>
+                        </div>
+                        <div class="task-meta">
+                            <div>Started: Sep 10, 2023</div>
+                            <div>Last updated: Today at 10:30 AM</div>
+                        </div>
+                        <div class="file-attachment">
+                            <i class="fas fa-paperclip"></i>
+                            <span>design_brief.pdf</span>
+                        </div>
+                    </div>
+                    
+                    <div class="task medium-priority" draggable="true">
+                        <div class="task-actions">
+                            <div class="task-action" title="Edit task"><i class="fas fa-edit"></i></div>
+                            <div class="task-action" title="Delete task"><i class="fas fa-trash"></i></div>
+                        </div>
+                        <div class="task-header">
+                            <div class="task-title">Research Competitors</div>
+                            <div class="task-priority">Medium</div>
+                        </div>
+                        <div class="task-description">
+                            Analyze competitor websites and features
+                        </div>
+                        <div class="task-footer">
+                            <div class="task-assignee">
+                                <div class="avatar">AS</div>
+                                <span>Alice Smith</span>
+                            </div>
+                            <div class="task-due">Sep 15</div>
+                        </div>
+                        <div class="task-meta">
+                            <div>Started: Sep 11, 2023</div>
+                            <div>Last updated: Yesterday at 3:45 PM</div>
+                        </div>
+                    </div>
+                    
+                    <div class="task low-priority" draggable="true">
+                        <div class="task-actions">
+                            <div class="task-action" title="Edit task"><i class="fas fa-edit"></i></div>
+                            <div class="task-action" title="Delete task"><i class="fas fa-trash"></i></div>
+                        </div>
+                        <div class="task-header">
+                            <div class="task-title">Update Documentation</div>
+                            <div class="task-priority">Low</div>
+                        </div>
+                        <div class="task-description">
+                            Update user guide with new features
+                        </div>
+                        <div class="task-footer">
+                            <div class="task-assignee">
+                                <div class="avatar">RJ</div>
+                                <span>Robert Johnson</span>
+                            </div>
+                            <div class="task-due">Next Week</div>
+                        </div>
+                        <div class="task-meta">
+                            <div>Started: Sep 5, 2023</div>
+                            <div>Last updated: 2 days ago</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="add-task">
+                    <i class="fas fa-plus"></i> Add a task
+                </div>
+            </div>
+            
+            <div class="column progress">
+                <div class="column-header">
+                    <span>In Progress</span>
+                    <span class="task-count">2</span>
+                </div>
+                <div class="tasks">
+                    <div class="task high-priority" draggable="true">
+                        <div class="task-actions">
+                            <div class="task-action" title="Edit task"><i class="fas fa-edit"></i></div>
+                            <div class="task-action" title="Delete task"><i class="fas fa-trash"></i></div>
+                        </div>
+                        <div class="task-header">
+                            <div class="task-title">Implement API</div>
+                            <div class="task-priority">High</div>
+                        </div>
+                        <div class="task-description">
+                            Develop user authentication API endpoints
+                        </div>
+                        <div class="task-footer">
+                            <div class="task-assignee">
+                                <div class="avatar">MD</div>
+                                <span>Mike Davis</span>
+                            </div>
+                            <div class="task-due">Today</div>
+                        </div>
+                        <div class="task-meta">
+                            <div>Started: Sep 12, 2023</div>
+                            <div>Last updated: Today at 9:15 AM</div>
+                        </div>
+                        <div class="file-attachment">
+                            <i class="fas fa-paperclip"></i>
+                            <span>api_specs.docx</span>
+                        </div>
+                    </div>
+                    
+                    <div class="task medium-priority" draggable="true">
+                        <div class="task-actions">
+                            <div class="task-action" title="Edit task"><i class="fas fa-edit"></i></div>
+                            <div class="task-action" title="Delete task"><i class="fas fa-trash"></i></div>
+                        </div>
+                        <div class="task-header">
+                            <div class="task-title">Database Optimization</div>
+                            <div class="task-priority">Medium</div>
+                        </div>
+                        <div class="task-description">
+                            Improve query performance and add indexes
+                        </div>
+                        <div class="task-footer">
+                            <div class="task-assignee">
+                                <div class="avatar">EW</div>
+                                <span>Emma Wilson</span>
+                            </div>
+                            <div class="task-due">Sep 18</div>
+                        </div>
+                        <div class="task-meta">
+                            <div>Started: Sep 10, 2023</div>
+                            <div>Last updated: Yesterday at 5:20 PM</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="add-task">
+                    <i class="fas fa-plus"></i> Add a task
+                </div>
+            </div>
+            
+            <div class="column review">
+                <div class="column-header">
+                    <span>Review</span>
+                    <span class="task-count">1</span>
+                </div>
+                <div class="tasks">
+                    <div class="task high-priority" draggable="true">
+                        <div class="task-actions">
+                            <div class="task-action" title="Edit task"><i class="fas fa-edit"></i></div>
+                            <div class="task-action" title="Delete task"><i class="fas fa-trash"></i></div>
+                        </div>
+                        <div class="task-header">
+                            <div class="task-title">Code Review</div>
+                            <div class="task-priority">High</div>
+                        </div>
+                        <div class="task-description">
+                            Review pull request #42 for new features
+                        </div>
+                        <div class="task-footer">
+                            <div class="task-assignee">
+                                <div class="avatar">TP</div>
+                                <span>Thomas Parker</span>
+                            </div>
+                            <div class="task-due">Yesterday</div>
+                        </div>
+                        <div class="task-meta">
+                            <div>Started: Sep 13, 2023</div>
+                            <div>Last updated: Today at 11:45 AM</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="add-task">
+                    <i class="fas fa-plus"></i> Add a task
+                </div>
+            </div>
+            
+            <div class="column done">
+                <div class="column-header">
+                    <span>Done</span>
+                    <span class="task-count">2</span>
+                </div>
+                <div class="tasks">
+                    <div class="task medium-priority" draggable="true">
+                        <div class="task-actions">
+                            <div class="task-action" title="Edit task"><i class="fas fa-edit"></i></div>
+                            <div class="task-action" title="Delete task"><i class="fas fa-trash"></i></div>
+                        </div>
+                        <div class="task-header">
+                            <div class="task-title">Write Tests</div>
+                            <div class="task-priority">Medium</div>
+                        </div>
+                        <div class="task-description">
+                            Create unit tests for user management module
+                        </div>
+                        <div class="task-footer">
+                            <div class="task-assignee">
+                                <div class="avatar">SJ</div>
+                                <span>Sarah Johnson</span>
+                            </div>
+                            <div class="task-due">Sep 10</div>
+                        </div>
+                        <div class="task-meta">
+                            <div>Started: Sep 5, 2023</div>
+                            <div>Completed: Sep 10, 2023 at 4:30 PM</div>
+                        </div>
+                    </div>
+                    
+                    <div class="task low-priority" draggable="true">
+                        <div class="task-actions">
+                            <div class="task-action" title="Edit task"><i class="fas fa-edit"></i></div>
+                            <div class="task-action" title="Delete task"><i class="fas fa-trash"></i></div>
+                        </div>
+                        <div class="task-header">
+                            <div class="task-title">Update Dependencies</div>
+                            <div class="task-priority">Low</div>
+                        </div>
+                        <div class="task-description">
+                            Upgrade packages to latest versions
+                        </div>
+                        <div class="task-footer">
+                            <div class="task-assignee">
+                                <div class="avatar">KL</div>
+                                <span>Kevin Lee</span>
+                            </div>
+                            <div class="task-due">Sep 8</div>
+                        </div>
+                        <div class="task-meta">
+                            <div>Started: Sep 1, 2023</div>
+                            <div>Completed: Sep 8, 2023 at 2:15 PM</div>
+                        </div>
+                        <div class="file-attachment">
+                            <i class="fas fa-paperclip"></i>
+                            <span>dependencies_list.xlsx</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="add-task">
+                    <i class="fas fa-plus"></i> Add a task
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team Members Modal -->
+    <div class="modal" id="team-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Team Members</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="team-grid">
+                    <div class="team-member">
+                        <div class="team-avatar">JD</div>
+                        <div>John Doe</div>
+                        <small>Designer</small>
+                    </div>
+                    <div class="team-member">
+                        <div class="team-avatar">AS</div>
+                        <div>Alice Smith</div>
+                        <small>Researcher</small>
+                    </div>
+                    <div class="team-member">
+                        <div class="team-avatar">RJ</div>
+                        <div>Robert Johnson</div>
+                        <small>Writer</small>
+                    </div>
+                    <div class="team-member">
+                        <div class="team-avatar">MD</div>
+                        <div>Mike Davis</div>
+                        <small>Developer</small>
+                    </div>
+                    <div class="team-member">
+                        <div class="team-avatar">EW</div>
+                        <div>Emma Wilson</div>
+                        <small>DBA</small>
+                    </div>
+                    <div class="team-member">
+                        <div class="team-avatar">TP</div>
+                        <div>Thomas Parker</div>
+                        <small>Reviewer</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Task Modal -->
+    <div class="modal" id="task-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Add New Task</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="task-title">Task Title</label>
+                    <input type="text" id="task-title" placeholder="Enter task title">
+                </div>
+                <div class="form-group">
+                    <label for="task-description">Description</label>
+                    <textarea id="task-description" placeholder="Enter task description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="task-priority">Priority</label>
+                    <select id="task-priority">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="task-assignee">Assign To</label>
+                    <select id="task-assignee">
+                        <option value="JD">John Doe</option>
+                        <option value="AS">Alice Smith</option>
+                        <option value="RJ">Robert Johnson</option>
+                        <option value="MD">Mike Davis</option>
+                        <option value="EW">Emma Wilson</option>
+                        <option value="TP">Thomas Parker</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="task-due">Due Date</label>
+                    <input type="date" id="task-due">
+                </div>
+                <div class="form-group">
+                    <label for="task-file">Attach File</label>
+                    <input type="file" id="task-file">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancel-task">Cancel</button>
+                <button class="btn-primary" id="save-task">Save Task</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tasks = document.querySelectorAll('.task');
+            const columns = document.querySelectorAll('.tasks');
+            const addTaskButtons = document.querySelectorAll('.add-task');
+            const teamModal = document.getElementById('team-modal');
+            const taskModal = document.getElementById('task-modal');
+            const teamMembersBtn = document.getElementById('team-members-btn');
+            const addTaskBtn = document.getElementById('add-task-btn');
+            const closeModalButtons = document.querySelectorAll('.close-modal');
+            const cancelTaskBtn = document.getElementById('cancel-task');
+            const saveTaskBtn = document.getElementById('save-task');
+            const modalTitle = document.getElementById('modal-title');
+            
+            // Initialize drag and drop
+            tasks.forEach(task => {
+                task.addEventListener('dragstart', () => {
+                    task.classList.add('dragging');
+                });
+                
+                task.addEventListener('dragend', () => {
+                    task.classList.remove('dragging');
+                    updateTaskCounts();
+                    updateTaskTimestamp(task);
+                });
+            });
+            
+            // Set up columns as drop zones
+            columns.forEach(column => {
+                column.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    const afterElement = getDragAfterElement(column, e.clientY);
+                    const draggable = document.querySelector('.dragging');
+                    if (afterElement == null) {
+                        column.appendChild(draggable);
+                    } else {
+                        column.insertBefore(draggable, afterElement);
+                    }
+                });
+            });
+            
+            // Team Members Modal
+            teamMembersBtn.addEventListener('click', () => {
+                teamModal.style.display = 'flex';
+            });
+            
+            // Add Task Modal
+            addTaskBtn.addEventListener('click', () => {
+                modalTitle.textContent = 'Add New Task';
+                taskModal.style.display = 'flex';
+            });
+            
+            // Close modals
+            closeModalButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    teamModal.style.display = 'none';
+                    taskModal.style.display = 'none';
+                });
+            });
+            
+            cancelTaskBtn.addEventListener('click', () => {
+                taskModal.style.display = 'none';
+            });
+            
+            // Save task
+            saveTaskBtn.addEventListener('click', () => {
+                const title = document.getElementById('task-title').value;
+                const description = document.getElementById('task-description').value;
+                const priority = document.getElementById('task-priority').value;
+                const assignee = document.getElementById('task-assignee').value;
+                const dueDate = document.getElementById('task-due').value;
+                
+                if (title) {
+                    createTask(title, description, priority, assignee, dueDate);
+                    taskModal.style.display = 'none';
+                } else {
+                    alert('Please enter a task title');
+                }
+            });
+            
+            // Add task functionality from column buttons
+            addTaskButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    modalTitle.textContent = 'Add New Task';
+                    taskModal.style.display = 'flex';
+                });
+            });
+            
+            // Task actions (edit and delete)
+            document.querySelectorAll('.task-action').forEach(action => {
+                action.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const task = action.closest('.task');
+                    
+                    if (action.querySelector('.fa-trash')) {
+                        // Delete task
+                        if (confirm('Are you sure you want to delete this task?')) {
+                            task.remove();
+                            updateTaskCounts();
+                        }
+                    } else if (action.querySelector('.fa-edit')) {
+                        // Edit task
+                        modalTitle.textContent = 'Edit Task';
+                        const title = task.querySelector('.task-title').textContent;
+                        const description = task.querySelector('.task-description').textContent;
+                        const priority = task.classList.contains('high-priority') ? 'high' : 
+                                       task.classList.contains('medium-priority') ? 'medium' : 'low';
+                        const assignee = task.querySelector('.avatar').textContent;
+                        
+                        document.getElementById('task-title').value = title;
+                        document.getElementById('task-description').value = description;
+                        document.getElementById('task-priority').value = priority;
+                        document.getElementById('task-assignee').value = assignee;
+                        
+                        taskModal.style.display = 'flex';
+                    }
+                });
+            });
+            
+            // Helper function to determine where to place dragged task
+            function getDragAfterElement(column, y) {
+                const draggableElements = [...column.querySelectorAll('.task:not(.dragging)')];
+                
+                return draggableElements.reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = y - box.top - box.height / 2;
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    } else {
+                        return closest;
+                    }
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
+            }
+            
+            // Update task counts in each column
+            function updateTaskCounts() {
+                document.querySelectorAll('.column').forEach(column => {
+                    const count = column.querySelectorAll('.task').length;
+                    column.querySelector('.task-count').textContent = count;
+                });
+            }
+            
+            // Update task timestamp when moved
+            function updateTaskTimestamp(task) {
+                const now = new Date();
+                const dateStr = now.toLocaleDateString();
+                const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                const meta = task.querySelector('.task-meta');
+                if (meta) {
+                    const updated = meta.querySelector('div:last-child');
+                    if (updated) {
+                        updated.textContent = `Last updated: ${dateStr} at ${timeStr}`;
+                    }
+                }
+            }
+            
+            // Create a new task
+            function createTask(title, description, priority, assignee, dueDate) {
+                const todoColumn = document.querySelector('.todo .tasks');
+                const assigneeName = getAssigneeName(assignee);
+                
+                const newTask = document.createElement('div');
+                newTask.className = `task ${priority}-priority`;
+                newTask.setAttribute('draggable', 'true');
+                
+                const now = new Date();
+                const dateStr = now.toLocaleDateString();
+                
+                newTask.innerHTML = `
+                    <div class="task-actions">
+                        <div class="task-action" title="Edit task"><i class="fas fa-edit"></i></div>
+                        <div class="task-action" title="Delete task"><i class="fas fa-trash"></i></div>
+                    </div>
+                    <div class="task-header">
+                        <div class="task-title">${title}</div>
+                        <div class="task-priority">${priority.charAt(0).toUpperCase() + priority.slice(1)}</div>
+                    </div>
+                    <div class="task-description">${description}</div>
+                    <div class="task-footer">
+                        <div class="task-assignee">
+                            <div class="avatar">${assignee}</div>
+                            <span>${assigneeName}</span>
+                        </div>
+                        <div class="task-due">${formatDate(dueDate)}</div>
+                    </div>
+                    <div class="task-meta">
+                        <div>Started: ${dateStr}</div>
+                        <div>Last updated: Just now</div>
+                    </div>
+                `;
+                
+                // Add drag events to new task
+                newTask.addEventListener('dragstart', () => {
+                    newTask.classList.add('dragging');
+                });
+                
+                newTask.addEventListener('dragend', () => {
+                    newTask.classList.remove('dragging');
+                    updateTaskCounts();
+                    updateTaskTimestamp(newTask);
+                });
+                
+                // Add action events to new task
+                newTask.querySelectorAll('.task-action').forEach(action => {
+                    action.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        
+                        if (action.querySelector('.fa-trash')) {
+                            // Delete task
+                            if (confirm('Are you sure you want to delete this task?')) {
+                                newTask.remove();
+                                updateTaskCounts();
+                            }
+                        } else if (action.querySelector('.fa-edit')) {
+                            // Edit task
+                            modalTitle.textContent = 'Edit Task';
+                            document.getElementById('task-title').value = title;
+                            document.getElementById('task-description').value = description;
+                            document.getElementById('task-priority').value = priority;
+                            document.getElementById('task-assignee').value = assignee;
+                            document.getElementById('task-due').value = dueDate;
+                            
+                            taskModal.style.display = 'flex';
+                        }
+                    });
+                });
+                
+                todoColumn.appendChild(newTask);
+                updateTaskCounts();
+            }
+            
+            // Helper function to get assignee name from initials
+            function getAssigneeName(initials) {
+                const assignees = {
+                    'JD': 'John Doe',
+                    'AS': 'Alice Smith',
+                    'RJ': 'Robert Johnson',
+                    'MD': 'Mike Davis',
+                    'EW': 'Emma Wilson',
+                    'TP': 'Thomas Parker'
+                };
+                
+                return assignees[initials] || 'Unassigned';
+            }
+            
+            // Helper function to format date
+            function formatDate(dateString) {
+                if (!dateString) return 'No due date';
+                
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            }
+        });
+    </script>
+</body>
+</html>
